@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Дмитрий Краснов](https://up.htmlacademy.ru/ecmascript-individual/2/user/2088903).
-* Наставник: `Неизвестно`.
+* Наставник: [Илья Локалин](https://htmlacademy.ru/profile/id1042585).
 
 ---
 
