@@ -1,4 +1,4 @@
-import FilterView from './view/filter-view.js';
+import Filter from './view/filter.js';
 import BoardPresenter from './presenter/board-presenter.js';
 import { render } from './render.js';
 
@@ -9,6 +9,6 @@ const boardPresenter = new BoardPresenter({
   container: tripEventsElement,
 });
 
-render(new FilterView(), filtersElement);
+render(new Filter(), filtersElement);
 
 boardPresenter.init();

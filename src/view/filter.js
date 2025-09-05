@@ -28,7 +28,7 @@ function createFilterTemplate() {
     `;
 }
 
-export default class FilterView {
+export default class Filter {
   getTemplate() {
     return createFilterTemplate();
   }

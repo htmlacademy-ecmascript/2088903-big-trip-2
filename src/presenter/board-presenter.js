@@ -1,24 +1,24 @@
 import { render } from '../render.js';
-import EventListView from '../view/event-list-view.js';
-import EditEventView from '../view/edit-event-view.js';
-import EventView from '../view/event-view.js';
-import SortView from '../view/sort-view.js';
+import List from '../view/list.js';
+import EditPoint from '../view/edit-point.js';
+import Point from '../view/point.js';
+import Sort from '../view/sort.js';
 
 
 export default class BoardPresenter {
-  eventListComponent = new EventListView();
+  eventListComponent = new List();
 
   constructor({ container }) {
     this.container = container;
   }
 
   init() {
-    render(new SortView(), this.container);
+    render(new Sort(), this.container);
     render(this.eventListComponent, this.container);
-    render(new EditEventView(), this.eventListComponent.getElement());
+    render(new EditPoint(), this.eventListComponent.getElement());
 
     for (let i = 0; i < 3; i++) {
-      render(new EventView(), this.eventListComponent.getElement());
+      render(new Point(), this.eventListComponent.getElement());
     }
   }
 }
