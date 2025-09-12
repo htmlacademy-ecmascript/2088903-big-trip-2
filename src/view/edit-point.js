@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
-import { capitalize } from '../utils/capitalize.js';
-import { formatDateTime } from '../utils/format-date.js';
+import { capitalize } from '../utils/index.js';
+import { formatDateTime } from '../utils/date-time.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createPointTypeTemplate = (types) => (
   types.map((type) => (
@@ -18,7 +18,6 @@ const createDestinationsTemplate = (destinations) => (
     `<option value=${name}></option>`
   )).join('')
 );
-
 
 const createOffersTemplate = (availableOffers, selectedOfferIds) => {
   if (availableOffers.length === 0) {
@@ -50,7 +49,7 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
 };
 
 const createDescriptionTemplate = ({description, pictures}) => {
-  if(!description) {
+  if (!description) {
     return '';
   }
 
@@ -76,8 +75,8 @@ const createDescriptionTemplate = ({description, pictures}) => {
 };
 
 const createEditPointTemplate = ({point, allDestinations, destinations, allTypes, availableOffers}) => {
-  const { base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type } = point;
-  const { name, description, pictures } = destinations;
+  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
+  const {name, description, pictures} = destinations;
 
   const pointTypeTemplate = createPointTypeTemplate(allTypes);
   const destinationsTemplate = createDestinationsTemplate(allDestinations);
@@ -144,34 +143,29 @@ const createEditPointTemplate = ({point, allDestinations, destinations, allTypes
     `;
 };
 
-export default class EditPoint {
+export default class EditPoint extends AbstractView {
+  #point = {};
+  #allDestinations = [];
+  #destinations = {};
+  #allTypes = [];
+  #offersByType = [];
+
   constructor({point = {}, destinations = [], offers = []}) {
-    this.point = point;
-    this.allDestinations = destinations ?? [];
-    this.destinations = this.allDestinations.find((destination) => destination.id === point.destination) ?? {};
-    this.allTypes = offers.map(({ type }) => type) ?? [];
-    this.offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
+    super();
+    this.#point = point;
+    this.#allDestinations = destinations ?? [];
+    this.#destinations = this.#allDestinations.find((destination) => destination.id === point.destination) ?? {};
+    this.#allTypes = offers.map(({type}) => type) ?? [];
+    this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
   }
 
-  getTemplate() {
+  get template() {
     return createEditPointTemplate({
-      point: this.point,
-      allDestinations: this.allDestinations,
-      destinations: this.destinations,
-      allTypes: this.allTypes,
-      availableOffers: this.offersByType
+      point: this.#point,
+      allDestinations: this.#allDestinations,
+      destinations: this.#destinations,
+      allTypes: this.#allTypes,
+      availableOffers: this.#offersByType
     });
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }

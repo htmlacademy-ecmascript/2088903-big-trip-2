@@ -1,4 +1,4 @@
-import { getRandomArrayElement } from '../src/utils/get-random-array-element';
+import { getRandomArrayElement } from '../src/utils/index.js';
 
 const points = [
   {

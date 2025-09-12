@@ -1,7 +1,6 @@
-import { createElement } from '../render.js';
-import { formatMonthDay, formatTime } from '../utils/format-date.js';
-import { capitalize } from '../utils/capitalize.js';
-import {getTimeDifference} from '../utils/get-time-difference';
+import { formatMonthDay, formatTime, getTimeDifference } from '../utils/date-time.js';
+import { capitalize } from '../utils/index.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createOffersList = (offers) => (
   offers.map(({title, price}) => `<li class="event__offer">
@@ -12,8 +11,8 @@ const createOffersList = (offers) => (
 );
 
 const createPointTemplate = ({point, destination, offers}) => {
-  const { base_price: basePrice, date_from: dateFrom, date_to: dateTo, is_favorite: isFavorite, type} = point;
-  const { name } = destination;
+  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, is_favorite: isFavorite, type} = point;
+  const {name} = destination;
   const offersList = createOffersList(offers);
 
   const title = `${capitalize(type)} ${name}`;
@@ -56,28 +55,21 @@ const createPointTemplate = ({point, destination, offers}) => {
     `;
 };
 
+export default class Point extends AbstractView {
+  #point = null;
+  #destination = null;
+  #offersByType = null;
+  #selectedOffers = null;
 
-export default class Point {
   constructor({point = {}, destinations = [], offers = []}) {
-    this.point = point;
-    this.destination = destinations.find((destination) => destination.id === point.destination) ?? {};
-    this.offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
-    this.selectedOffers = this.offersByType?.filter((offer) => point.offers?.includes(offer.id)) ?? [];
+    super();
+    this.#point = point;
+    this.#destination = destinations.find((destination) => destination.id === point.destination) ?? {};
+    this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
+    this.#selectedOffers = this.#offersByType?.filter((offer) => point.offers?.includes(offer.id)) ?? [];
   }
 
-  getTemplate() {
-    return createPointTemplate({ point: this.point, destination: this.destination, offers: this.selectedOffers });
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
+  get template() {
+    return createPointTemplate({point: this.#point, destination: this.#destination, offers: this.#selectedOffers});
   }
 }
