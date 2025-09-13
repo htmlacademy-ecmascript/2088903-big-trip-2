@@ -1,8 +1,8 @@
-import { render } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 import List from '../view/list.js';
-import EditPoint from '../view/edit-point.js';
 import Point from '../view/point.js';
 import Sort from '../view/sort.js';
+import EditPoint from '../view/edit-point.js';
 
 export default class BoardPresenter {
   #container = null;
@@ -26,18 +26,53 @@ export default class BoardPresenter {
 
     render(new Sort(), this.#container);
     render(this.#eventListComponent, this.#container);
-    render(new EditPoint({
-      point: this.#points[0],
-      destinations: this.#destinations,
-      offers: this.#offers
-    }), this.#eventListComponent.element);
 
     for (let i = 0; i < this.#points.length; i++) {
-      render(new Point({
-        point: this.#points[i],
-        destinations: this.#destinations,
-        offers: this.#offers
-      }), this.#eventListComponent.element);
+      this.#renderPoint(this.#points[i], this.#destinations, this.#offers);
     }
+  }
+
+  #renderPoint(point, destinations, offers) {
+    const escKeyDownHandler = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        replaceEditPointToPoint();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    };
+
+    const pointComponent = new Point({
+      point,
+      destinations,
+      offers,
+      onEditClick: () => {
+        replacePointToEditPoint();
+        document.addEventListener('keydown', escKeyDownHandler);
+      }
+    });
+
+    const editPointComponent = new EditPoint({
+      point,
+      destinations,
+      offers,
+      onFormSubmit: () => {
+        replaceEditPointToPoint();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      },
+      onCloseClick: () => {
+        replaceEditPointToPoint();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      },
+    });
+
+    function replacePointToEditPoint() {
+      replace(editPointComponent, pointComponent);
+    }
+
+    function replaceEditPointToPoint() {
+      replace(pointComponent, editPointComponent);
+    }
+
+    render(pointComponent, this.#eventListComponent.element);
   }
 }

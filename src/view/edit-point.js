@@ -149,14 +149,24 @@ export default class EditPoint extends AbstractView {
   #destinations = {};
   #allTypes = [];
   #offersByType = [];
+  #handleFormSubmit = null;
+  #handleCloseClick = null;
 
-  constructor({point = {}, destinations = [], offers = []}) {
+  constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick}) {
     super();
     this.#point = point;
     this.#allDestinations = destinations ?? [];
     this.#destinations = this.#allDestinations.find((destination) => destination.id === point.destination) ?? {};
     this.#allTypes = offers.map(({type}) => type) ?? [];
     this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
+    this.#handleFormSubmit = onFormSubmit;
+    this.#handleCloseClick = onCloseClick;
+
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#closeClickHandler);
   }
 
   get template() {
@@ -168,4 +178,14 @@ export default class EditPoint extends AbstractView {
       availableOffers: this.#offersByType
     });
   }
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
+
+  #closeClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleCloseClick();
+  };
 }
