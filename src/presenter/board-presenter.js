@@ -3,6 +3,7 @@ import List from '../view/list.js';
 import Point from '../view/point.js';
 import Sort from '../view/sort.js';
 import EditPoint from '../view/edit-point.js';
+import NoPoint from '../view/no-point.js';
 
 export default class BoardPresenter {
   #container = null;
@@ -24,12 +25,7 @@ export default class BoardPresenter {
     this.#destinations = [...this.#pointsModel.destinations];
     this.#offers = [...this.#pointsModel.offers];
 
-    render(new Sort(), this.#container);
-    render(this.#eventListComponent, this.#container);
-
-    for (let i = 0; i < this.#points.length; i++) {
-      this.#renderPoint(this.#points[i], this.#destinations, this.#offers);
-    }
+    this.#renderBoard();
   }
 
   #renderPoint(point, destinations, offers) {
@@ -74,5 +70,19 @@ export default class BoardPresenter {
     }
 
     render(pointComponent, this.#eventListComponent.element);
+  }
+
+  #renderBoard() {
+    if (!this.#points.length) {
+      render(new NoPoint(), this.#container);
+      return;
+    }
+
+    render(new Sort(), this.#container);
+    render(this.#eventListComponent, this.#container);
+
+    for (let i = 0; i < this.#points.length; i++) {
+      this.#renderPoint(this.#points[i], this.#destinations, this.#offers);
+    }
   }
 }
