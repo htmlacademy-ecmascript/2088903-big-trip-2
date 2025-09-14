@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
-import { capitalize } from '../utils/capitalize.js';
-import { formatDateTime } from '../utils/format-date.js';
+import { capitalize } from '../utils/index.js';
+import { formatDateTime } from '../utils/date-time.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createPointTypeTemplate = (types) => (
   types.map((type) => (
@@ -18,7 +18,6 @@ const createDestinationsTemplate = (destinations) => (
     `<option value=${name}></option>`
   )).join('')
 );
-
 
 const createOffersTemplate = (availableOffers, selectedOfferIds) => {
   if (availableOffers.length === 0) {
@@ -50,7 +49,7 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
 };
 
 const createDescriptionTemplate = ({description, pictures}) => {
-  if(!description) {
+  if (!description) {
     return '';
   }
 
@@ -76,8 +75,8 @@ const createDescriptionTemplate = ({description, pictures}) => {
 };
 
 const createEditPointTemplate = ({point, allDestinations, destinations, allTypes, availableOffers}) => {
-  const { base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type } = point;
-  const { name, description, pictures } = destinations;
+  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
+  const {name, description, pictures} = destinations;
 
   const pointTypeTemplate = createPointTypeTemplate(allTypes);
   const destinationsTemplate = createDestinationsTemplate(allDestinations);
@@ -105,7 +104,7 @@ const createEditPointTemplate = ({point, allDestinations, destinations, allTypes
 
                   <div class="event__field-group  event__field-group--destination">
                     <label class="event__label  event__type-output" for="event-destination-1">
-                      Flight
+                      ${capitalize(type)}
                     </label>
                     <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${name} list="destination-list-1">
                     <datalist id="destination-list-1">
@@ -144,34 +143,49 @@ const createEditPointTemplate = ({point, allDestinations, destinations, allTypes
     `;
 };
 
-export default class EditPoint {
-  constructor({point = {}, destinations = [], offers = []}) {
-    this.point = point;
-    this.allDestinations = destinations ?? [];
-    this.destinations = this.allDestinations.find((destination) => destination.id === point.destination) ?? {};
-    this.allTypes = offers.map(({ type }) => type) ?? [];
-    this.offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
+export default class EditPoint extends AbstractView {
+  #point = {};
+  #allDestinations = [];
+  #destinations = {};
+  #allTypes = [];
+  #offersByType = [];
+  #handleFormSubmit = null;
+  #handleCloseClick = null;
+
+  constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick}) {
+    super();
+    this.#point = point;
+    this.#allDestinations = destinations ?? [];
+    this.#destinations = this.#allDestinations.find((destination) => destination.id === point.destination) ?? {};
+    this.#allTypes = offers.map(({type}) => type) ?? [];
+    this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
+    this.#handleFormSubmit = onFormSubmit;
+    this.#handleCloseClick = onCloseClick;
+
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#closeClickHandler);
   }
 
-  getTemplate() {
+  get template() {
     return createEditPointTemplate({
-      point: this.point,
-      allDestinations: this.allDestinations,
-      destinations: this.destinations,
-      allTypes: this.allTypes,
-      availableOffers: this.offersByType
+      point: this.#point,
+      allDestinations: this.#allDestinations,
+      destinations: this.#destinations,
+      allTypes: this.#allTypes,
+      availableOffers: this.#offersByType
     });
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #closeClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleCloseClick();
+  };
 }
