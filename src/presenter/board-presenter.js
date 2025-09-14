@@ -7,6 +7,7 @@ import NoPoint from '../view/no-point.js';
 import Filter from '../view/filter.js';
 import { NoPointsMessage } from '../const/no-point-message.js';
 import { generateFilter } from '../utils/filter.js';
+import { isEscapeKey } from '../utils/index.js';
 
 export default class BoardPresenter {
   #filtersContainer = null;
@@ -35,7 +36,7 @@ export default class BoardPresenter {
 
   #renderPoint(point, destinations, offers) {
     const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
+      if (isEscapeKey(evt)) {
         evt.preventDefault();
         replaceFormToPoint();
         document.removeEventListener('keydown', escKeyDownHandler);
