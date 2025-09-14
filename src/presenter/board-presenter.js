@@ -36,7 +36,7 @@ export default class BoardPresenter {
 
   #renderPoint(point, destinations, offers) {
     const escKeyDownHandler = (evt) => {
-      if (isEscapeKey()) {
+      if (isEscapeKey(evt)) {
         evt.preventDefault();
         replaceFormToPoint();
         document.removeEventListener('keydown', escKeyDownHandler);
