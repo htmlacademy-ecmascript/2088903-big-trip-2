@@ -1,8 +1,12 @@
 import dayjs from 'dayjs';
 import { DateFormat } from '../const/date-format.js';
 import duration from 'dayjs/plugin/duration';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 dayjs.extend(duration);
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 const dateTime = (date, dateFormat) => dayjs(date).format(dateFormat);
 
@@ -34,3 +38,11 @@ export const getTimeDifference = (dateFrom, dateTo) => {
 
   return diffDuration.format(DateFormat.DURATION_DAY_HOUR_MINUTE);
 };
+
+export const isBeforeToday = (date) => dayjs(date).isBefore(dayjs(), 'day');
+
+export const isAfterToday = (date) => dayjs(date).isAfter(dayjs(), 'day');
+
+export const isToday = (dateFrom, dateTo) =>
+  dayjs(dateFrom).isSameOrBefore(dayjs(), 'day') &&
+  dayjs(dateTo).isSameOrAfter(dayjs(), 'day');

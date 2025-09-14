@@ -4,9 +4,13 @@ import Point from '../view/point.js';
 import Sort from '../view/sort.js';
 import EditPoint from '../view/edit-point.js';
 import NoPoint from '../view/no-point.js';
+import Filter from '../view/filter.js';
+import { NoPointsMessage } from '../const/no-point-message.js';
+import { generateFilter } from '../utils/filter.js';
 
 export default class BoardPresenter {
-  #container = null;
+  #filtersContainer = null;
+  #tripContainer = null;
   #pointsModel = null;
 
   #eventListComponent = new List();
@@ -15,8 +19,9 @@ export default class BoardPresenter {
   #destinations = [];
   #offers = [];
 
-  constructor({container, pointsModel}) {
-    this.#container = container;
+  constructor({tripContainer, filtersContainer, pointsModel}) {
+    this.#tripContainer = tripContainer;
+    this.#filtersContainer = filtersContainer;
     this.#pointsModel = pointsModel;
   }
 
@@ -32,7 +37,7 @@ export default class BoardPresenter {
     const escKeyDownHandler = (evt) => {
       if (evt.key === 'Escape') {
         evt.preventDefault();
-        replaceEditPointToPoint();
+        replaceFormToPoint();
         document.removeEventListener('keydown', escKeyDownHandler);
       }
     };
@@ -42,7 +47,7 @@ export default class BoardPresenter {
       destinations,
       offers,
       onEditClick: () => {
-        replacePointToEditPoint();
+        replacePointToForm();
         document.addEventListener('keydown', escKeyDownHandler);
       }
     });
@@ -52,20 +57,20 @@ export default class BoardPresenter {
       destinations,
       offers,
       onFormSubmit: () => {
-        replaceEditPointToPoint();
+        replaceFormToPoint();
         document.removeEventListener('keydown', escKeyDownHandler);
       },
       onCloseClick: () => {
-        replaceEditPointToPoint();
+        replaceFormToPoint();
         document.removeEventListener('keydown', escKeyDownHandler);
       },
     });
 
-    function replacePointToEditPoint() {
+    function replacePointToForm() {
       replace(editPointComponent, pointComponent);
     }
 
-    function replaceEditPointToPoint() {
+    function replaceFormToPoint() {
       replace(pointComponent, editPointComponent);
     }
 
@@ -73,13 +78,16 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
+    const filters = generateFilter(this.#points);
+    render(new Filter({filters}), this.#filtersContainer);
+
     if (!this.#points.length) {
-      render(new NoPoint(), this.#container);
+      render(new NoPoint({text: NoPointsMessage.EVERYTHING}), this.#tripContainer);
       return;
     }
 
-    render(new Sort(), this.#container);
-    render(this.#eventListComponent, this.#container);
+    render(new Sort(), this.#tripContainer);
+    render(this.#eventListComponent, this.#tripContainer);
 
     for (let i = 0; i < this.#points.length; i++) {
       this.#renderPoint(this.#points[i], this.#destinations, this.#offers);
