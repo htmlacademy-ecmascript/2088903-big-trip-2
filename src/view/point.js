@@ -42,7 +42,7 @@ const createPointTemplate = ({point, destination, offers}) => {
             <ul class="event__selected-offers">
                 ${offersList}
             </ul>
-            <button class=${favoriteClassnames} type="button">
+            <button class="${favoriteClassnames}" type="button">
               <span class="visually-hidden">Add to favorite</span>
               <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
                 <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
@@ -61,17 +61,21 @@ export default class Point extends AbstractView {
   #offersByType = null;
   #selectedOffers = null;
   #handleEditClick = null;
+  #handleFavoriteClick = null;
 
-  constructor({point = {}, destinations = [], offers = [], onEditClick}) {
+  constructor({point = {}, destinations = [], offers = [], onEditClick, onFavoriteClick}) {
     super();
     this.#point = point;
     this.#destination = destinations.find((destination) => destination.id === point.destination) ?? {};
     this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
     this.#selectedOffers = this.#offersByType?.filter((offer) => point.offers?.includes(offer.id)) ?? [];
     this.#handleEditClick = onEditClick;
+    this.#handleFavoriteClick = onFavoriteClick;
 
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('.event__favorite-btn')
+      .addEventListener('click', this.#favoriteClickHandler);
   }
 
   get template() {
@@ -81,5 +85,10 @@ export default class Point extends AbstractView {
   #editClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleEditClick();
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFavoriteClick();
   };
 }
