@@ -1,4 +1,4 @@
-import { render, } from '../framework/render.js';
+import { remove, render, } from '../framework/render.js';
 import List from '../view/list.js';
 import Sort from '../view/sort.js';
 import NoPoint from '../view/no-point.js';
@@ -7,6 +7,8 @@ import PointPresenter from './point-presenter.js';
 import { NoPointsMessage } from '../const/no-point-message.js';
 import { generateFilter } from '../utils/filter.js';
 import { updateItem } from '../utils/index.js';
+import { SORT_TYPES, SortType } from '../const/sort-types.js';
+import { sortByDate, sortFromMaxDuration, sortFromMaxPrice } from '../utils/sort.js';
 
 export default class BoardPresenter {
   #filtersContainer = null;
@@ -14,11 +16,13 @@ export default class BoardPresenter {
   #pointsModel = null;
 
   #pointListComponent = new List();
-  #sortComponent = new Sort();
+  #sortComponent = null;
+  #filterComponent = null;
 
   #points = [];
   #destinations = [];
   #offers = [];
+  #currentSortType = SortType.DEFAULT;
 
   #pointPresenters = new Map();
 
@@ -36,13 +40,44 @@ export default class BoardPresenter {
     this.#renderBoard();
   }
 
+  #sortPoints(sortType) {
+    switch (sortType) {
+      case SortType.DEFAULT:
+        this.#points.sort(sortByDate);
+        break;
+      case SortType.FROM_MAX_PRICE:
+        this.#points.sort(sortFromMaxPrice);
+        break;
+      case SortType.FROM_MAX_DURATION:
+        this.#points.sort(sortFromMaxDuration);
+        break;
+      default:
+        break;
+    }
+    this.#currentSortType = sortType;
+  }
+
   #renderSort() {
+    this.#sortComponent = new Sort({
+      sortTypes: SORT_TYPES,
+      currentSortType: this.#currentSortType,
+      onSortTypeChange: this.#handleSortTypeChange
+    });
     render(this.#sortComponent, this.#tripContainer);
+  }
+
+  #clearSort() {
+    remove(this.#sortComponent);
   }
 
   #renderFilters() {
     const filters = generateFilter(this.#points);
-    render(new Filter({filters}), this.#filtersContainer);
+    this.#filterComponent = new Filter({filters});
+    render(this.#filterComponent, this.#filtersContainer);
+  }
+
+  #clearFilters() {
+    remove(this.#filterComponent);
   }
 
   #renderPoint(point, destinations, offers) {
@@ -89,5 +124,17 @@ export default class BoardPresenter {
 
   #handleModeChange = () => {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortPoints(sortType);
+    this.#clearFilters();
+    this.#clearSort();
+    this.#clearPointList();
+    this.#renderBoard();
   };
 }
