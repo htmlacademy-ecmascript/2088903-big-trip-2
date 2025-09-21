@@ -152,9 +152,8 @@ const createEditPointTemplate = ({point, destinations, destination, types, avail
 
 export default class EditPoint extends AbstractStatefulView {
   #destinations = [];
-  #destination = {};
+  #offers = [];
   #types = [];
-  #offersByType = [];
   #handleFormSubmit = null;
   #handleCloseClick = null;
 
@@ -162,9 +161,8 @@ export default class EditPoint extends AbstractStatefulView {
     super();
     this._setState(EditPoint.parsePointToState(point));
     this.#destinations = destinations ?? [];
-    this.#destination = this.#destinations.find((destination) => destination.id === point.destination) ?? {};
+    this.#offers = offers ?? [];
     this.#types = offers.map(({type}) => type) ?? [];
-    this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
 
@@ -175,24 +173,25 @@ export default class EditPoint extends AbstractStatefulView {
     return createEditPointTemplate({
       point: this._state,
       destinations: this.#destinations,
-      destination: this.#destination,
+      destination: this.#destinations.find((destination) => destination.id === this._state.destination) ?? {},
       types: this.#types,
-      availableOffers: this.#offersByType
+      availableOffers: this.#offers.find((offer) => offer.type === this._state.type)?.offers ?? [],
     });
   }
 
+  reset(point) {
+    this.updateElement(
+      EditPoint.parsePointToState(point),
+    );
+  }
+
   _restoreHandlers() {
-    this.element.querySelector('form')
-      .addEventListener('submit', this.#formSubmitHandler);
-
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#closeClickHandler);
-
-    this.element.querySelector('.event__input--price')
-      .addEventListener('change', this.#basePriceChangeHandler);
-
-    this.element.querySelector('.event__available-offers')
-      ?.addEventListener('change', this.#selectedOffersChangeHandler);
+    this.element.querySelector('form')?.addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn')?.addEventListener('click', this.#closeClickHandler);
+    this.element.querySelector('.event__input--price')?.addEventListener('change', this.#basePriceChangeHandler);
+    this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#selectedOffersChangeHandler);
+    this.element.querySelector('.event__type-group')?.addEventListener('change', this.#typeChangeHandler);
+    this.element.querySelector('.event__input--destination')?.addEventListener('change', this.#destinationChangeHandler);
   }
 
   #formSubmitHandler = (evt) => {
@@ -206,12 +205,11 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   #basePriceChangeHandler = (evt) => {
-    this._state['base_price'] = parseInt(evt.target.value, 10);
+    this._setState({base_price: parseInt(evt.target.value, 10)});
   };
 
   #selectedOffersChangeHandler = (evt) => {
     const input = evt.target.closest('.event__offer-checkbox');
-
     if (!input) {
       return;
     }
@@ -220,13 +218,39 @@ export default class EditPoint extends AbstractStatefulView {
       ? [...this._state.offers, input.id]
       : this._state.offers.filter((id) => id !== input.id);
 
+    this._setState({offers: updatedOffers});
+  };
+
+  #typeChangeHandler = (evt) => {
+    const input = evt.target.closest('.event__type-input');
+    if (!input) {
+      return;
+    }
+
     this.updateElement({
-      offers: updatedOffers
+      type: input.value,
+      offers: [],
     });
   };
 
-  static parsePointToState(properties) {
-    return {...properties};
+  #destinationChangeHandler = (evt) => {
+    const value = evt.target.value;
+    if (!value) {
+      return;
+    }
+
+    const id = this.#destinations.find((destination) => destination.name === value)?.id ?? null;
+    if (!id) {
+      return;
+    }
+
+    this.updateElement({
+      destination: id,
+    });
+  };
+
+  static parsePointToState(point) {
+    return {...point};
   }
 
   static parseStateToPoint(state) {
