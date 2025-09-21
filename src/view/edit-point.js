@@ -35,8 +35,8 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
     const isChecked = selectedOfferIds.includes(id);
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}" type="checkbox" name="event-offer-${id}" ${isChecked ? 'checked' : ''}>
-        <label class="event__offer-label" for="event-offer-${id}">
+        <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="${id}" ${isChecked ? 'checked' : ''}>
+        <label class="event__offer-label" for="${id}">
           <span class="event__offer-title">${title}</span>
           &plus;&euro;&nbsp;
           <span class="event__offer-price">${price}</span>
@@ -151,7 +151,6 @@ const createEditPointTemplate = ({point, destinations, destination, types, avail
 };
 
 export default class EditPoint extends AbstractStatefulView {
-  #point = {};
   #destinations = [];
   #destination = {};
   #types = [];
@@ -161,7 +160,7 @@ export default class EditPoint extends AbstractStatefulView {
 
   constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick}) {
     super();
-    this.#point = point;
+    this._setState(EditPoint.parsePointToState(point));
     this.#destinations = destinations ?? [];
     this.#destination = this.#destinations.find((destination) => destination.id === point.destination) ?? {};
     this.#types = offers.map(({type}) => type) ?? [];
@@ -169,16 +168,12 @@ export default class EditPoint extends AbstractStatefulView {
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
 
-    this.element.querySelector('form')
-      .addEventListener('submit', this.#formSubmitHandler);
-
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#closeClickHandler);
+    this._restoreHandlers();
   }
 
   get template() {
     return createEditPointTemplate({
-      point: this.#point,
+      point: this._state,
       destinations: this.#destinations,
       destination: this.#destination,
       types: this.#types,
@@ -186,14 +181,48 @@ export default class EditPoint extends AbstractStatefulView {
     });
   }
 
+  _restoreHandlers() {
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#closeClickHandler);
+
+    this.element.querySelector('.event__input--price')
+      .addEventListener('change', this.#basePriceChangeHandler);
+
+    this.element.querySelector('.event__available-offers')
+      ?.addEventListener('change', this.#selectedOffersChangeHandler);
+  }
+
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this.#handleFormSubmit(EditPoint.parseStateToPoint(this._state));
   };
 
   #closeClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleCloseClick();
+  };
+
+  #basePriceChangeHandler = (evt) => {
+    this._state['base_price'] = parseInt(evt.target.value, 10);
+  };
+
+  #selectedOffersChangeHandler = (evt) => {
+    const input = evt.target.closest('.event__offer-checkbox');
+
+    if (!input) {
+      return;
+    }
+
+    const updatedOffers = input.checked
+      ? [...this._state.offers, input.id]
+      : this._state.offers.filter((id) => id !== input.id);
+
+    this.updateElement({
+      offers: updatedOffers
+    });
   };
 
   static parsePointToState(properties) {
