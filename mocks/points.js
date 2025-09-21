@@ -1,5 +1,3 @@
-import { getRandomArrayElement } from '../src/utils/index.js';
-
 export const points = [
   {
     'id': '3d5eb2ac-2914-4fe0-ac50-d2dd6999ecc2',
@@ -335,5 +333,3 @@ export const points = [
     'type': 'taxi'
   }
 ];
-
-export const getRandomPoint = () => getRandomArrayElement(points);

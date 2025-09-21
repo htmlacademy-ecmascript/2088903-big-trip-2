@@ -1,11 +1,18 @@
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { capitalize } from '../utils/index.js';
 import { formatDateTime } from '../utils/date-time.js';
-import AbstractView from '../framework/view/abstract-view.js';
 
-const createPointTypeTemplate = (types) => (
+const createPointTypeTemplate = (types, current) => (
   types.map((type) => (
     `<div class="event__type-item">
-      <input id="event-type-${type}" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${type}>
+      <input
+        id="event-type-${type}"
+        class="event__type-input  visually-hidden"
+        type="radio"
+        name="event-type"
+        value="${type}"
+        ${current === type ? 'checked' : ''}
+      />
       <label class="event__type-label  event__type-label--${type}" for="event-type-${type}">
         ${capitalize(type)}
       </label>
@@ -15,7 +22,7 @@ const createPointTypeTemplate = (types) => (
 
 const createDestinationsTemplate = (destinations) => (
   destinations.map(({name}) => (
-    `<option value=${name}></option>`
+    `<option value="${name}"></option>`
   )).join('')
 );
 
@@ -74,12 +81,12 @@ const createDescriptionTemplate = ({description, pictures}) => {
   );
 };
 
-const createEditPointTemplate = ({point, allDestinations, destinations, allTypes, availableOffers}) => {
+const createEditPointTemplate = ({point, destinations, destination, types, availableOffers}) => {
   const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
-  const {name, description, pictures} = destinations;
+  const {name, description, pictures} = destination;
 
-  const pointTypeTemplate = createPointTypeTemplate(allTypes);
-  const destinationsTemplate = createDestinationsTemplate(allDestinations);
+  const pointTypeTemplate = createPointTypeTemplate(types, type);
+  const destinationsTemplate = createDestinationsTemplate(destinations);
   const offersTemplate = createOffersTemplate(availableOffers, offers);
   const descriptionTemplate = createDescriptionTemplate({description, pictures});
 
@@ -143,11 +150,11 @@ const createEditPointTemplate = ({point, allDestinations, destinations, allTypes
     `;
 };
 
-export default class EditPoint extends AbstractView {
+export default class EditPoint extends AbstractStatefulView {
   #point = {};
-  #allDestinations = [];
-  #destinations = {};
-  #allTypes = [];
+  #destinations = [];
+  #destination = {};
+  #types = [];
   #offersByType = [];
   #handleFormSubmit = null;
   #handleCloseClick = null;
@@ -155,9 +162,9 @@ export default class EditPoint extends AbstractView {
   constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick}) {
     super();
     this.#point = point;
-    this.#allDestinations = destinations ?? [];
-    this.#destinations = this.#allDestinations.find((destination) => destination.id === point.destination) ?? {};
-    this.#allTypes = offers.map(({type}) => type) ?? [];
+    this.#destinations = destinations ?? [];
+    this.#destination = this.#destinations.find((destination) => destination.id === point.destination) ?? {};
+    this.#types = offers.map(({type}) => type) ?? [];
     this.#offersByType = offers.find((offer) => offer.type === point.type)?.offers ?? [];
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
@@ -172,9 +179,9 @@ export default class EditPoint extends AbstractView {
   get template() {
     return createEditPointTemplate({
       point: this.#point,
-      allDestinations: this.#allDestinations,
       destinations: this.#destinations,
-      allTypes: this.#allTypes,
+      destination: this.#destination,
+      types: this.#types,
       availableOffers: this.#offersByType
     });
   }
@@ -188,4 +195,12 @@ export default class EditPoint extends AbstractView {
     evt.preventDefault();
     this.#handleCloseClick();
   };
+
+  static parsePointToState(properties) {
+    return {...properties};
+  }
+
+  static parseStateToPoint(state) {
+    return {...state};
+  }
 }
