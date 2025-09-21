@@ -205,6 +205,7 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   #basePriceChangeHandler = (evt) => {
+    // eslint-disable-next-line camelcase
     this._setState({base_price: parseInt(evt.target.value, 10)});
   };
 
