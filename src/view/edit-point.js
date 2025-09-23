@@ -1,3 +1,4 @@
+import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { capitalize } from '../utils/index.js';
 import { formatDateTime } from '../utils/date-time.js';
@@ -157,6 +158,8 @@ export default class EditPoint extends AbstractStatefulView {
   #handleFormSubmit = null;
   #handleCloseClick = null;
 
+  #datepicker = null;
+
   constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick}) {
     super();
     this._setState(EditPoint.parsePointToState(point));
@@ -177,6 +180,15 @@ export default class EditPoint extends AbstractStatefulView {
       types: this.#types,
       availableOffers: this.#offers.find((offer) => offer.type === this._state.type)?.offers ?? [],
     });
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#datepicker) {
+      this.#datepicker.destroy();
+      this.#datepicker = null;
+    }
   }
 
   reset(point) {
@@ -247,6 +259,12 @@ export default class EditPoint extends AbstractStatefulView {
 
     this.updateElement({
       destination: id,
+    });
+  };
+
+  #dateChangeHandler = ([userDate]) => {
+    this.updateElement({
+      dueDate: userDate,
     });
   };
 
