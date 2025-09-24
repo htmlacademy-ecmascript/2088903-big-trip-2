@@ -1,3 +1,4 @@
+import he from 'he';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
@@ -24,7 +25,7 @@ const createPointTypeTemplate = (types, current) => (
 );
 
 const createDestinationsTemplate = (destinations) => (
-  destinations.map(({ name }) => (
+  destinations.map(({name}) => (
     `<option value="${name}"></option>`
   )).join('')
 );
@@ -34,7 +35,7 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
     return '';
   }
 
-  const offersListTemplate = availableOffers.map(({ id, title, price }) => {
+  const offersListTemplate = availableOffers.map(({id, title, price}) => {
     const isChecked = selectedOfferIds.includes(id);
     return (
       `<div class="event__offer-selector">
@@ -58,13 +59,13 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
   );
 };
 
-const createDescriptionTemplate = ({ description, pictures }) => {
+const createDescriptionTemplate = ({description, pictures}) => {
   if (!description) {
     return '';
   }
 
   const picturesListTemplate = pictures.map((picture) => (
-    `<img class="event__photo" src=${picture.src} alt=${picture.description}>`
+    `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`
   )).join('');
 
   return (
@@ -84,14 +85,14 @@ const createDescriptionTemplate = ({ description, pictures }) => {
   );
 };
 
-const createEditPointTemplate = ({ point, destinations, destination, types, availableOffers }) => {
-  const { base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type } = point;
-  const { name, description, pictures } = destination;
+const createEditPointTemplate = ({point, destinations, destination, types, availableOffers}) => {
+  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
+  const {name, description, pictures} = destination;
 
   const pointTypeTemplate = createPointTypeTemplate(types, type);
   const destinationsTemplate = createDestinationsTemplate(destinations);
   const offersTemplate = createOffersTemplate(availableOffers, offers);
-  const descriptionTemplate = createDescriptionTemplate({ description, pictures });
+  const descriptionTemplate = createDescriptionTemplate({description, pictures});
 
   return `
           <li class="trip-events__item">
@@ -116,7 +117,7 @@ const createEditPointTemplate = ({ point, destinations, destination, types, avai
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${capitalize(type)}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${name} list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(name ?? '')}" list="destination-list-1">
                     <datalist id="destination-list-1">
                       ${destinationsTemplate}
                     </datalist>
@@ -135,7 +136,7 @@ const createEditPointTemplate = ({ point, destinations, destination, types, avai
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice}>
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${he.encode(basePrice.toString())}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -164,12 +165,12 @@ export default class EditPoint extends AbstractStatefulView {
   #datepickerTo = null;
   #datepickerFrom = null;
 
-  constructor({ point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick, onDeleteClick }) {
+  constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick, onDeleteClick}) {
     super();
     this._setState(EditPoint.parsePointToState(point));
     this.#destinations = destinations ?? [];
     this.#offers = offers ?? [];
-    this.#types = offers.map(({ type }) => type) ?? [];
+    this.#types = offers.map(({type}) => type) ?? [];
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
     this.#handleDeleteClick = onDeleteClick;
@@ -231,7 +232,7 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   #basePriceChangeHandler = (evt) => {
-    this._setState({ 'base_price': parseInt(evt.target.value, 10) });
+    this._setState({'base_price': parseInt(evt.target.value, 10)});
   };
 
   #selectedOffersChangeHandler = (evt) => {
@@ -244,7 +245,7 @@ export default class EditPoint extends AbstractStatefulView {
       ? [...this._state.offers, input.id]
       : this._state.offers.filter((id) => id !== input.id);
 
-    this._setState({ offers: updatedOffers });
+    this._setState({offers: updatedOffers});
   };
 
   #typeChangeHandler = (evt) => {
@@ -297,7 +298,7 @@ export default class EditPoint extends AbstractStatefulView {
         defaultDate: this._state.date_from,
         maxDate: this._state.date_to,
         onClose: this.#dateFromChangeHandler,
-        locale: { firstDayOfWeek: 1 },
+        locale: {firstDayOfWeek: 1},
       },
     );
   }
@@ -312,7 +313,7 @@ export default class EditPoint extends AbstractStatefulView {
         defaultDate: this._state.date_to,
         minDate: this._state.date_from,
         onClose: this.#dateToChangeHandler,
-        locale: { firstDayOfWeek: 1 },
+        locale: {firstDayOfWeek: 1},
       },
     );
   }
@@ -323,10 +324,10 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   static parsePointToState(point) {
-    return { ...point };
+    return {...point};
   }
 
   static parseStateToPoint(state) {
-    return { ...state };
+    return {...state};
   }
 }

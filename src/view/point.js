@@ -1,3 +1,4 @@
+import he from 'he';
 import { formatMonthDay, formatTime, getTimeDifference } from '../utils/date-time.js';
 import { capitalize } from '../utils/index.js';
 import AbstractView from '../framework/view/abstract-view.js';
@@ -21,6 +22,7 @@ const createPointTemplate = ({point, destination, offers}) => {
     : 'event__favorite-btn';
 
   return `
+        <li class="trip-events__item">
           <div class="event">
             <time class="event__date" datetime=${dateFrom}>${formatMonthDay(dateFrom)}</time>
             <div class="event__type">
@@ -36,7 +38,7 @@ const createPointTemplate = ({point, destination, offers}) => {
               <p class="event__duration">${getTimeDifference(dateFrom, dateTo)}</p>
             </div>
             <p class="event__price">
-              &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
+              &euro;&nbsp;<span class="event__price-value">${he.encode(basePrice.toString())}</span>
             </p>
             <h4 class="visually-hidden">Offers:</h4>
             <ul class="event__selected-offers">
@@ -52,6 +54,7 @@ const createPointTemplate = ({point, destination, offers}) => {
               <span class="visually-hidden">Open event</span>
             </button>
           </div>
+        </li>
     `;
 };
 

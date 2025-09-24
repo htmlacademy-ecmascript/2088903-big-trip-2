@@ -1,15 +1,14 @@
 import { remove, render, } from '../framework/render.js';
 import List from '../view/list.js';
 import Sort from '../view/sort.js';
-import NoPoint from '../view/no-point.js';
 import PointPresenter from './point-presenter.js';
-import { NoPointsMessage } from '../const/no-point-message.js';
 import { filter } from '../utils/filter.js';
 import { SORT_TYPES, SortType } from '../const/sort-types.js';
 import { sortByDate, sortFromMaxDuration, sortFromMaxPrice } from '../utils/sort.js';
 import { UserAction } from '../const/user-action.js';
 import { UpdateType } from '../const/update-type.js';
 import { FilterType } from '../const/filter-type.js';
+import NoPoint from '../view/no-point.js';
 
 export default class BoardPresenter {
   #tripContainer = null;
@@ -19,7 +18,7 @@ export default class BoardPresenter {
   #pointListComponent = new List();
   #sortComponent = null;
   #filterComponent = null;
-  #noPointsComponent = new NoPoint({ text: NoPointsMessage.EVERYTHING });
+  #noPointsComponent = null;
 
   #destinations = [];
   #offers = [];
@@ -28,7 +27,7 @@ export default class BoardPresenter {
 
   #pointPresenters = new Map();
 
-  constructor({ tripContainer, pointsModel, filterModel }) {
+  constructor({tripContainer, pointsModel, filterModel}) {
     this.#tripContainer = tripContainer;
     this.#pointsModel = pointsModel;
     this.#filterModel = filterModel;
@@ -89,6 +88,10 @@ export default class BoardPresenter {
   }
 
   #renderNoPoints() {
+    this.#noPointsComponent = new NoPoint({
+      filterType: this.#filterType
+    });
+
     render(this.#noPointsComponent, this.#tripContainer);
   }
 
@@ -113,7 +116,7 @@ export default class BoardPresenter {
     this.#pointPresenters.clear();
   }
 
-  #clearBoard({ resetSortType = false } = {}) {
+  #clearBoard({resetSortType = false} = {}) {
     this.#clearPointList();
     this.#clearSort();
     this.#clearNoPoints();
@@ -147,7 +150,7 @@ export default class BoardPresenter {
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
-        this.#clearBoard({ resetSortType: true });
+        this.#clearBoard({resetSortType: true});
         this.#renderBoard();
         break;
     }

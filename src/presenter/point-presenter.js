@@ -5,7 +5,6 @@ import { isEscapeKey } from '../utils/index.js';
 import { Mode } from '../const/mode.js';
 import { UpdateType } from '../const/update-type.js';
 import { UserAction } from '../const/user-action.js';
-import { isDatesEqual } from '../utils/date-time.js';
 
 export default class PointPresenter {
   #pointListContainer = null;
@@ -18,7 +17,7 @@ export default class PointPresenter {
   #point = null;
   #mode = Mode.DEFAULT;
 
-  constructor({ pointListContainer, onDataChange, onModeChange }) {
+  constructor({pointListContainer, onDataChange, onModeChange}) {
     this.#pointListContainer = pointListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleModeChange = onModeChange;
@@ -103,13 +102,14 @@ export default class PointPresenter {
   };
 
   #handleFormSubmit = (update) => {
-    const isMinorUpdate =
-            !isDatesEqual(this.#point['date_from'], update['date_from']) ||
-            !isDatesEqual(this.#point['date_to'], update['date_to']);
+    // const isMinorUpdate =
+    //         !isDatesEqual(this.#point['date_from'], update['date_from']) ||
+    //         !isDatesEqual(this.#point['date_to'], update['date_to']);
 
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
-      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      // isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      UpdateType.MINOR,
       update,
     );
     this.#replaceFormToPoint();
@@ -124,7 +124,7 @@ export default class PointPresenter {
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
-      { ...this.#point, 'is_favorite': !this.#point['is_favorite'] });
+      {...this.#point, 'is_favorite': !this.#point['is_favorite']});
   };
 
   #handleDeleteClick = (point) => {
