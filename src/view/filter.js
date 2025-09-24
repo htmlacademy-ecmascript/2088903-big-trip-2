@@ -1,8 +1,8 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { capitalize } from '../utils/index.js';
 
-const createFilterItemTemplate = (filter, isChecked) => {
-  const {type, count} = filter;
+const createFilterItemTemplate = (filter, currentFilter) => {
+  const { type, count } = filter;
 
   return (
     `<div class="trip-filters__filter">
@@ -12,7 +12,7 @@ const createFilterItemTemplate = (filter, isChecked) => {
         type="radio"
         name="trip-filter"
         value=${type}
-        ${isChecked ? 'checked' : ''}
+        ${type === currentFilter ? 'checked' : ''}
         ${count === 0 ? 'disabled' : ''}
         />
       <label class="trip-filters__filter-label" for="filter-${type}">${capitalize(type)}</label>
@@ -20,9 +20,9 @@ const createFilterItemTemplate = (filter, isChecked) => {
   );
 };
 
-const createFilterTemplate = (filterItems) => {
-  const filterItemsTemplate = filterItems
-    .map((filter, index) => createFilterItemTemplate(filter, index === 0))
+const createFilterTemplate = ({ filters, currentFilter }) => {
+  const filterItemsTemplate = filters
+    .map((filter) => createFilterItemTemplate(filter, currentFilter))
     .join('');
 
   return (
@@ -35,13 +35,28 @@ const createFilterTemplate = (filterItems) => {
 
 export default class Filter extends AbstractView {
   #filters = null;
+  #currentFilter = null;
 
-  constructor({filters}) {
+  #handleFilterTypeChange = null;
+
+  constructor({ filters, currentFilterType, onFilterTypeChange }) {
     super();
     this.#filters = filters;
+    this.#currentFilter = currentFilterType;
+    this.#handleFilterTypeChange = onFilterTypeChange;
+
+    this.element.addEventListener('change', this.#filterTypeChangeHandler);
   }
 
   get template() {
-    return createFilterTemplate(this.#filters);
+    return createFilterTemplate({
+      filters: this.#filters,
+      currentFilter: this.#currentFilter,
+    });
   }
+
+  #filterTypeChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFilterTypeChange(evt.target.value);
+  };
 }

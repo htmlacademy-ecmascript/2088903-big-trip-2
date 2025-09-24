@@ -2,19 +2,19 @@ import { remove, render, } from '../framework/render.js';
 import List from '../view/list.js';
 import Sort from '../view/sort.js';
 import NoPoint from '../view/no-point.js';
-import Filter from '../view/filter.js';
 import PointPresenter from './point-presenter.js';
 import { NoPointsMessage } from '../const/no-point-message.js';
-import { generateFilter } from '../utils/filter.js';
+import { filter } from '../utils/filter.js';
 import { SORT_TYPES, SortType } from '../const/sort-types.js';
 import { sortByDate, sortFromMaxDuration, sortFromMaxPrice } from '../utils/sort.js';
 import { UserAction } from '../const/user-action.js';
 import { UpdateType } from '../const/update-type.js';
+import { FilterType } from '../const/filter-type.js';
 
 export default class BoardPresenter {
-  #filtersContainer = null;
   #tripContainer = null;
   #pointsModel = null;
+  #filterModel = null;
 
   #pointListComponent = new List();
   #sortComponent = null;
@@ -24,27 +24,33 @@ export default class BoardPresenter {
   #destinations = [];
   #offers = [];
   #currentSortType = SortType.DEFAULT;
+  #filterType = FilterType.EVERYTHING;
 
   #pointPresenters = new Map();
 
-  constructor({ tripContainer, filtersContainer, pointsModel }) {
+  constructor({ tripContainer, pointsModel, filterModel }) {
     this.#tripContainer = tripContainer;
-    this.#filtersContainer = filtersContainer;
     this.#pointsModel = pointsModel;
+    this.#filterModel = filterModel;
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
+    this.#filterType = this.#filterModel.filter;
+    const points = this.#pointsModel.points;
+    const filteredTasks = filter[this.#filterType](points);
+
     switch (this.#currentSortType) {
       case SortType.DEFAULT:
-        return this.#pointsModel.points.sort(sortByDate);
+        return filteredTasks.sort(sortByDate);
       case SortType.FROM_MAX_PRICE:
-        return this.#pointsModel.points.sort(sortFromMaxPrice);
+        return filteredTasks.sort(sortFromMaxPrice);
       case SortType.FROM_MAX_DURATION:
-        return this.#pointsModel.points.sort(sortFromMaxDuration);
+        return filteredTasks.sort(sortFromMaxDuration);
       default:
-        return this.#pointsModel.points;
+        return filteredTasks;
     }
   }
 
@@ -66,16 +72,6 @@ export default class BoardPresenter {
 
   #clearSort() {
     remove(this.#sortComponent);
-  }
-
-  #renderFilters() {
-    const filters = generateFilter(this.points);
-    this.#filterComponent = new Filter({ filters });
-    render(this.#filterComponent, this.#filtersContainer);
-  }
-
-  #clearFilters() {
-    remove(this.#filterComponent);
   }
 
   #renderPoint(point, destinations, offers) {
@@ -101,8 +97,6 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
-    this.#renderFilters();
-
     if (!this.points.length) {
       this.#renderNoPoints();
       return;
@@ -122,7 +116,6 @@ export default class BoardPresenter {
   #clearBoard({ resetSortType = false } = {}) {
     this.#clearPointList();
     this.#clearSort();
-    this.#clearFilters();
     this.#clearNoPoints();
 
     if (resetSortType) {
