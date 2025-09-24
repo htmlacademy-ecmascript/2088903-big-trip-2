@@ -24,7 +24,7 @@ const createPointTypeTemplate = (types, current) => (
 );
 
 const createDestinationsTemplate = (destinations) => (
-  destinations.map(({name}) => (
+  destinations.map(({ name }) => (
     `<option value="${name}"></option>`
   )).join('')
 );
@@ -34,7 +34,7 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
     return '';
   }
 
-  const offersListTemplate = availableOffers.map(({id, title, price}) => {
+  const offersListTemplate = availableOffers.map(({ id, title, price }) => {
     const isChecked = selectedOfferIds.includes(id);
     return (
       `<div class="event__offer-selector">
@@ -58,7 +58,7 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
   );
 };
 
-const createDescriptionTemplate = ({description, pictures}) => {
+const createDescriptionTemplate = ({ description, pictures }) => {
   if (!description) {
     return '';
   }
@@ -84,14 +84,14 @@ const createDescriptionTemplate = ({description, pictures}) => {
   );
 };
 
-const createEditPointTemplate = ({point, destinations, destination, types, availableOffers}) => {
-  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
-  const {name, description, pictures} = destination;
+const createEditPointTemplate = ({ point, destinations, destination, types, availableOffers }) => {
+  const { base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type } = point;
+  const { name, description, pictures } = destination;
 
   const pointTypeTemplate = createPointTypeTemplate(types, type);
   const destinationsTemplate = createDestinationsTemplate(destinations);
   const offersTemplate = createOffersTemplate(availableOffers, offers);
-  const descriptionTemplate = createDescriptionTemplate({description, pictures});
+  const descriptionTemplate = createDescriptionTemplate({ description, pictures });
 
   return `
           <li class="trip-events__item">
@@ -159,18 +159,20 @@ export default class EditPoint extends AbstractStatefulView {
   #types = [];
   #handleFormSubmit = null;
   #handleCloseClick = null;
+  #handleDeleteClick = null;
 
   #datepickerTo = null;
   #datepickerFrom = null;
 
-  constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick}) {
+  constructor({ point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick, onDeleteClick }) {
     super();
     this._setState(EditPoint.parsePointToState(point));
     this.#destinations = destinations ?? [];
     this.#offers = offers ?? [];
-    this.#types = offers.map(({type}) => type) ?? [];
+    this.#types = offers.map(({ type }) => type) ?? [];
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
+    this.#handleDeleteClick = onDeleteClick;
 
     this._restoreHandlers();
   }
@@ -212,6 +214,7 @@ export default class EditPoint extends AbstractStatefulView {
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#selectedOffersChangeHandler);
     this.element.querySelector('.event__type-group')?.addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination')?.addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__reset-btn')?.addEventListener('click', this.#formDeleteClickHandler);
 
     this.#setDateFromDatepicker();
     this.#setDateToDatepicker();
@@ -228,7 +231,7 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   #basePriceChangeHandler = (evt) => {
-    this._setState({'base_price': parseInt(evt.target.value, 10)});
+    this._setState({ 'base_price': parseInt(evt.target.value, 10) });
   };
 
   #selectedOffersChangeHandler = (evt) => {
@@ -241,7 +244,7 @@ export default class EditPoint extends AbstractStatefulView {
       ? [...this._state.offers, input.id]
       : this._state.offers.filter((id) => id !== input.id);
 
-    this._setState({offers: updatedOffers});
+    this._setState({ offers: updatedOffers });
   };
 
   #typeChangeHandler = (evt) => {
@@ -294,7 +297,7 @@ export default class EditPoint extends AbstractStatefulView {
         defaultDate: this._state.date_from,
         maxDate: this._state.date_to,
         onClose: this.#dateFromChangeHandler,
-        locale: {firstDayOfWeek: 1},
+        locale: { firstDayOfWeek: 1 },
       },
     );
   }
@@ -309,16 +312,21 @@ export default class EditPoint extends AbstractStatefulView {
         defaultDate: this._state.date_to,
         minDate: this._state.date_from,
         onClose: this.#dateToChangeHandler,
-        locale: {firstDayOfWeek: 1},
+        locale: { firstDayOfWeek: 1 },
       },
     );
   }
 
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleDeleteClick(EditPoint.parseStateToPoint(this._state));
+  };
+
   static parsePointToState(point) {
-    return {...point};
+    return { ...point };
   }
 
   static parseStateToPoint(state) {
-    return {...state};
+    return { ...state };
   }
 }

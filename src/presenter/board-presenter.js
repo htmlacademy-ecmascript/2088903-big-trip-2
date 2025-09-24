@@ -6,9 +6,10 @@ import Filter from '../view/filter.js';
 import PointPresenter from './point-presenter.js';
 import { NoPointsMessage } from '../const/no-point-message.js';
 import { generateFilter } from '../utils/filter.js';
-import { updateItem } from '../utils/index.js';
 import { SORT_TYPES, SortType } from '../const/sort-types.js';
 import { sortByDate, sortFromMaxDuration, sortFromMaxPrice } from '../utils/sort.js';
+import { UserAction } from '../const/user-action.js';
+import { UpdateType } from '../const/update-type.js';
 
 export default class BoardPresenter {
   #filtersContainer = null;
@@ -18,43 +19,40 @@ export default class BoardPresenter {
   #pointListComponent = new List();
   #sortComponent = null;
   #filterComponent = null;
+  #noPointsComponent = new NoPoint({ text: NoPointsMessage.EVERYTHING });
 
-  #points = [];
   #destinations = [];
   #offers = [];
   #currentSortType = SortType.DEFAULT;
 
   #pointPresenters = new Map();
 
-  constructor({tripContainer, filtersContainer, pointsModel}) {
+  constructor({ tripContainer, filtersContainer, pointsModel }) {
     this.#tripContainer = tripContainer;
     this.#filtersContainer = filtersContainer;
     this.#pointsModel = pointsModel;
+
+    this.#pointsModel.addObserver(this.#handleModelEvent);
+  }
+
+  get points() {
+    switch (this.#currentSortType) {
+      case SortType.DEFAULT:
+        return this.#pointsModel.points.sort(sortByDate);
+      case SortType.FROM_MAX_PRICE:
+        return this.#pointsModel.points.sort(sortFromMaxPrice);
+      case SortType.FROM_MAX_DURATION:
+        return this.#pointsModel.points.sort(sortFromMaxDuration);
+      default:
+        return this.#pointsModel.points;
+    }
   }
 
   init() {
-    this.#points = [...this.#pointsModel.points];
     this.#destinations = [...this.#pointsModel.destinations];
     this.#offers = [...this.#pointsModel.offers];
 
     this.#renderBoard();
-  }
-
-  #sortPoints(sortType) {
-    switch (sortType) {
-      case SortType.DEFAULT:
-        this.#points.sort(sortByDate);
-        break;
-      case SortType.FROM_MAX_PRICE:
-        this.#points.sort(sortFromMaxPrice);
-        break;
-      case SortType.FROM_MAX_DURATION:
-        this.#points.sort(sortFromMaxDuration);
-        break;
-      default:
-        break;
-    }
-    this.#currentSortType = sortType;
   }
 
   #renderSort() {
@@ -71,8 +69,8 @@ export default class BoardPresenter {
   }
 
   #renderFilters() {
-    const filters = generateFilter(this.#points);
-    this.#filterComponent = new Filter({filters});
+    const filters = generateFilter(this.points);
+    this.#filterComponent = new Filter({ filters });
     render(this.#filterComponent, this.#filtersContainer);
   }
 
@@ -83,7 +81,7 @@ export default class BoardPresenter {
   #renderPoint(point, destinations, offers) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#pointListComponent.element,
-      onDataChange: this.#handlePointChange,
+      onDataChange: this.#handleViewAction,
       onModeChange: this.#handleModeChange,
     });
     pointPresenter.init(point, destinations, offers);
@@ -91,17 +89,21 @@ export default class BoardPresenter {
   }
 
   #renderPoints() {
-    this.#points.forEach((point) => this.#renderPoint(point, this.#destinations, this.#offers));
+    this.points.forEach((point) => this.#renderPoint(point, this.#destinations, this.#offers));
   }
 
   #renderNoPoints() {
-    render(new NoPoint({text: NoPointsMessage.EVERYTHING}), this.#tripContainer);
+    render(this.#noPointsComponent, this.#tripContainer);
+  }
+
+  #clearNoPoints() {
+    remove(this.#noPointsComponent);
   }
 
   #renderBoard() {
     this.#renderFilters();
 
-    if (!this.#points.length) {
+    if (!this.points.length) {
       this.#renderNoPoints();
       return;
     }
@@ -117,9 +119,45 @@ export default class BoardPresenter {
     this.#pointPresenters.clear();
   }
 
-  #handlePointChange = (updatedPoint) => {
-    this.#points = updateItem(this.#points, updatedPoint);
-    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, this.#destinations, this.#offers);
+  #clearBoard({ resetSortType = false } = {}) {
+    this.#clearPointList();
+    this.#clearSort();
+    this.#clearFilters();
+    this.#clearNoPoints();
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DEFAULT;
+    }
+  }
+
+  #handleViewAction = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_POINT:
+        this.#pointsModel.updateTask(updateType, update);
+        break;
+      case UserAction.ADD_TASK:
+        this.#pointsModel.addTask(updateType, update);
+        break;
+      case UserAction.DELETE_TASK:
+        this.#pointsModel.deleteTask(updateType, update);
+        break;
+    }
+  };
+
+  #handleModelEvent = (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#pointPresenters.get(data.id).init(data);
+        break;
+      case UpdateType.MINOR:
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearBoard({ resetSortType: true });
+        this.#renderBoard();
+        break;
+    }
   };
 
   #handleModeChange = () => {
@@ -131,10 +169,8 @@ export default class BoardPresenter {
       return;
     }
 
-    this.#sortPoints(sortType);
-    this.#clearFilters();
-    this.#clearSort();
-    this.#clearPointList();
+    this.#currentSortType = sortType;
+    this.#clearBoard();
     this.#renderBoard();
   };
 }
