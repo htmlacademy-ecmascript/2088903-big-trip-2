@@ -12,23 +12,25 @@ export default class NewPointPresenter {
 
   #pointComponent = null;
 
-  constructor({ pointsListContainer, onDataChange, onDestroy }) {
+  constructor({pointsListContainer, onDataChange, onDestroy}) {
     this.#pointsListContainer = pointsListContainer;
     this.#handleDataChange = onDataChange;
     this.#handleDestroy = onDestroy;
   }
 
-  init() {
+  init(point, destinations, offers) {
     if (this.#pointComponent !== null) {
       return;
     }
 
-    this.#pointComponent = new AddPoint();
-    /* this.#pointComponent = new AddPoint({
+    this.#pointComponent = new AddPoint({
+      point,
+      destinations,
+      offers,
       onFormSubmit: this.#handleFormSubmit,
       onDeleteClick: this.#handleDeleteClick,
       onCloseClick: this.#handleCloseClick,
-    }); */
+    });
 
     render(this.#pointComponent, this.#pointsListContainer, RenderPosition.AFTERBEGIN);
 
@@ -52,7 +54,7 @@ export default class NewPointPresenter {
     this.#handleDataChange(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      { id: nanoid(), ...point },
+      {id: nanoid(), ...point},
     );
     this.destroy();
   };

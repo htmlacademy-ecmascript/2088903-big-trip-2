@@ -10,6 +10,7 @@ import { UpdateType } from '../const/update-type.js';
 import { FilterType } from '../const/filter-type.js';
 import NoPoint from '../view/no-point.js';
 import NewPointPresenter from './new-point-presenter.js';
+import { BLANK_POINT } from '../const/blank-point.js';
 
 export default class BoardPresenter {
   #tripContainer = null;
@@ -28,7 +29,7 @@ export default class BoardPresenter {
   #pointPresenters = new Map();
   #newPointPresenter = null;
 
-  constructor({ tripContainer, pointsModel, filterModel, onNewTaskDestroy }) {
+  constructor({tripContainer, pointsModel, filterModel, onNewTaskDestroy}) {
     this.#tripContainer = tripContainer;
     this.#pointsModel = pointsModel;
     this.#filterModel = filterModel;
@@ -37,7 +38,7 @@ export default class BoardPresenter {
     this.#filterModel.addObserver(this.#handleModelEvent);
 
     this.#newPointPresenter = new NewPointPresenter({
-      taskListContainer: this.#pointListComponent.element,
+      pointsListContainer: this.#pointListComponent.element,
       onDataChange: this.#handleViewAction,
       onDestroy: onNewTaskDestroy
     });
@@ -71,7 +72,7 @@ export default class BoardPresenter {
   createPoint() {
     this.#currentSortType = SortType.DEFAULT;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newPointPresenter.init();
+    this.#newPointPresenter.init(BLANK_POINT, this.#destinations, this.#offers);
   }
 
   #renderSort() {
@@ -130,7 +131,7 @@ export default class BoardPresenter {
     this.#pointPresenters.clear();
   }
 
-  #clearBoard({ resetSortType = false } = {}) {
+  #clearBoard({resetSortType = false} = {}) {
     this.#newPointPresenter.destroy();
     this.#clearPointList();
     this.#clearSort();
@@ -165,7 +166,7 @@ export default class BoardPresenter {
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
-        this.#clearBoard({ resetSortType: true });
+        this.#clearBoard({resetSortType: true});
         this.#renderBoard();
         break;
     }

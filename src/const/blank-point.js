@@ -1,16 +1,15 @@
 import { nanoid } from 'nanoid';
-import dayjs from 'dayjs';
 
 const DefaultValue = {
-  DATE_FROM: dayjs(),
-  DATE_TO: dayjs().day(1),
+  DATE_FROM: '',
+  DATE_TO: '',
   TYPE: 'taxi',
 };
 
 export const BLANK_POINT = {
   'base_price': '',
-  'date_from': DefaultValue.DATE_FROM,
-  'date_to': DefaultValue.DATE_TO,
+  'date_from': '2025-09-26T00:10:25.881Z',
+  'date_to': '2025-09-27T09:37:25.881Z',
   'destination': '',
   'is_favorite': false,
   'offers': [],
