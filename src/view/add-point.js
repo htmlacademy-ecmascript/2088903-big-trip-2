@@ -117,7 +117,15 @@ const createAddPointTemplate = ({point, destinations, destination, types, availa
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${capitalize(type)}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(name ?? '')}" list="destination-list-1">
+                    <input
+                      class="event__input  event__input--destination"
+                      id="event-destination-1"
+                      type="text"
+                      name="event-destination"
+                      value="${he.encode(name ?? '')}"
+                      list="destination-list-1"
+                      required
+                    >
                     <datalist id="destination-list-1">
                       ${destinationsTemplate}
                     </datalist>
@@ -140,10 +148,7 @@ const createAddPointTemplate = ({point, destinations, destination, types, availa
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
-                  <button class="event__rollup-btn" type="button">
-                    <span class="visually-hidden">Open event</span>
-                  </button>
+                  <button class="event__reset-btn" type="reset">Close</button>
                 </header>
                 <section class="event__details">
                   ${offersTemplate}
@@ -159,20 +164,18 @@ export default class AddPoint extends AbstractStatefulView {
   #offers = [];
   #types = [];
   #handleFormSubmit = null;
-  #handleCloseClick = null;
   #handleDeleteClick = null;
 
   #datepickerTo = null;
   #datepickerFrom = null;
 
-  constructor({point = {}, destinations = [], offers = [], onFormSubmit, onCloseClick, onDeleteClick}) {
+  constructor({point = {}, destinations = [], offers = [], onFormSubmit, onDeleteClick}) {
     super();
     this._setState(AddPoint.parsePointToState(point));
     this.#destinations = destinations ?? [];
     this.#offers = offers ?? [];
     this.#types = offers.map(({type}) => type) ?? [];
     this.#handleFormSubmit = onFormSubmit;
-    this.#handleCloseClick = onCloseClick;
     this.#handleDeleteClick = onDeleteClick;
 
     this._restoreHandlers();
@@ -210,7 +213,6 @@ export default class AddPoint extends AbstractStatefulView {
 
   _restoreHandlers() {
     this.element.querySelector('form')?.addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn')?.addEventListener('click', this.#closeClickHandler);
     this.element.querySelector('.event__input--price')?.addEventListener('change', this.#basePriceChangeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#selectedOffersChangeHandler);
     this.element.querySelector('.event__type-group')?.addEventListener('change', this.#typeChangeHandler);
@@ -224,11 +226,6 @@ export default class AddPoint extends AbstractStatefulView {
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#handleFormSubmit(AddPoint.parseStateToPoint(this._state));
-  };
-
-  #closeClickHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleCloseClick();
   };
 
   #basePriceChangeHandler = (evt) => {

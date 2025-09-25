@@ -29,7 +29,6 @@ export default class NewPointPresenter {
       offers,
       onFormSubmit: this.#handleFormSubmit,
       onDeleteClick: this.#handleDeleteClick,
-      onCloseClick: this.#handleCloseClick,
     });
 
     render(this.#pointComponent, this.#pointsListContainer, RenderPosition.AFTERBEGIN);
@@ -60,10 +59,6 @@ export default class NewPointPresenter {
   };
 
   #handleDeleteClick = () => {
-    this.destroy();
-  };
-
-  #handleCloseClick = () => {
     this.destroy();
   };
 
