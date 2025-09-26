@@ -3,6 +3,8 @@ import EditPoint from '../view/edit-point.js';
 import { remove, render, replace } from '../framework/render.js';
 import { isEscapeKey } from '../utils/index.js';
 import { Mode } from '../const/mode.js';
+import { UpdateType } from '../const/update-type.js';
+import { UserAction } from '../const/user-action.js';
 
 export default class PointPresenter {
   #pointListContainer = null;
@@ -41,6 +43,7 @@ export default class PointPresenter {
       offers,
       onFormSubmit: this.#handleFormSubmit,
       onCloseClick: this.#handleCloseClick,
+      onDeleteClick: this.#handleDeleteClick
     });
 
     if (prevPointComponent === null || prevPointEditComponent === null) {
@@ -98,16 +101,37 @@ export default class PointPresenter {
     this.#replacePointToForm();
   };
 
-  #handleFormSubmit = (point) => {
-    this.#handleDataChange({...point});
+  #handleFormSubmit = (update) => {
+    // const isMinorUpdate =
+    //         !isDatesEqual(this.#point['date_from'], update['date_from']) ||
+    //         !isDatesEqual(this.#point['date_to'], update['date_to']);
+
+    this.#handleDataChange(
+      UserAction.UPDATE_POINT,
+      // isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      UpdateType.MINOR,
+      update,
+    );
     this.#replaceFormToPoint();
   };
 
   #handleCloseClick = () => {
+    this.#editPointComponent.reset(this.#point);
     this.#replaceFormToPoint();
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#point, 'is_favorite': !this.#point['is_favorite']});
+    this.#handleDataChange(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      {...this.#point, 'is_favorite': !this.#point['is_favorite']});
+  };
+
+  #handleDeleteClick = (point) => {
+    this.#handleDataChange(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
+    );
   };
 }

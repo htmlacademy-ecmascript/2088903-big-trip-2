@@ -45,4 +45,6 @@ export const isAfterToday = (date) => dayjs(date).isAfter(dayjs(), 'day');
 
 export const isToday = (dateFrom, dateTo) =>
   dayjs(dateFrom).isSameOrBefore(dayjs(), 'day') &&
-  dayjs(dateTo).isSameOrAfter(dayjs(), 'day');
+    dayjs(dateTo).isSameOrAfter(dayjs(), 'day');
+
+export const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
