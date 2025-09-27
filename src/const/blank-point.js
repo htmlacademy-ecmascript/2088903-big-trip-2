@@ -1,13 +1,12 @@
-import dayjs from 'dayjs';
-
 const DefaultValue = {
-  DATE_FROM: dayjs().toISOString(),
-  DATE_TO: dayjs().add(1, 'hour').toISOString(),
+  DATE_FROM: null,
+  DATE_TO: null,
   TYPE: 'flight',
+  PRICE: 0,
 };
 
 export const BLANK_POINT = {
-  basePrice: '',
+  basePrice: DefaultValue.PRICE,
   dateFrom: DefaultValue.DATE_FROM,
   dateTo: DefaultValue.DATE_TO,
   destination: '',
