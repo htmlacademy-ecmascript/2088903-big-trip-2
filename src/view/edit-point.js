@@ -6,7 +6,7 @@ import { capitalize } from '../utils/index.js';
 import { formatDateTime } from '../utils/date-time.js';
 import { DateFormat } from '../const/date-format.js';
 
-const createPointTypeTemplate = (types, current) => (
+const createPointTypeTemplate = (types, current, isDisabled) => (
   types.map((type) => (
     `<div class="event__type-item">
       <input
@@ -16,6 +16,7 @@ const createPointTypeTemplate = (types, current) => (
         name="event-type"
         value="${type}"
         ${current === type ? 'checked' : ''}
+        ${isDisabled ? 'disabled' : ''}
       />
       <label class="event__type-label  event__type-label--${type}" for="event-type-${type}">
         ${capitalize(type)}
@@ -24,13 +25,13 @@ const createPointTypeTemplate = (types, current) => (
   )).join('')
 );
 
-const createDestinationsTemplate = (destinations) => (
+const createDestinationsTemplate = (destinations, isDisabled) => (
   destinations.map(({name}) => (
-    `<option value="${name}"></option>`
+    `<option value="${name}" ${isDisabled ? 'disabled' : ''}></option>`
   )).join('')
 );
 
-const createOffersTemplate = (availableOffers, selectedOfferIds) => {
+const createOffersTemplate = (availableOffers, selectedOfferIds, isDisabled) => {
   if (availableOffers.length === 0) {
     return '';
   }
@@ -39,7 +40,14 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
     const isChecked = selectedOfferIds.includes(id);
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="${id}" ${isChecked ? 'checked' : ''}>
+        <input
+          class="event__offer-checkbox  visually-hidden"
+          id="${id}"
+          type="checkbox"
+          name="${id}"
+          ${isChecked ? 'checked' : ''}
+          ${isDisabled ? 'disabled' : ''}
+        >
         <label class="event__offer-label" for="${id}">
           <span class="event__offer-title">${title}</span>
           &plus;&euro;&nbsp;
@@ -60,38 +68,49 @@ const createOffersTemplate = (availableOffers, selectedOfferIds) => {
 };
 
 const createDescriptionTemplate = ({description, pictures}) => {
-  if (!description) {
+  const hasPictures = pictures && pictures.length;
+
+  if (!description && !hasPictures) {
     return '';
   }
 
-  const picturesListTemplate = pictures.map((picture) => (
+  const picturesListTemplate = hasPictures ? pictures.map((picture) => (
     `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`
-  )).join('');
+  )).join('') : '';
 
   return (
     `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">
         Destination
       </h3>
-      <p class="event__destination-description">
+
+      ${description ?
+      `<p class="event__destination-description">
         ${description}
-      </p>
-      <div class="event__photos-container">
+      </p>` : ''}
+
+      ${hasPictures ?
+      `<div class="event__photos-container">
         <div class="event__photos-tape">
           ${picturesListTemplate}
         </div>
-      </div>
+      </div>` : ''}
     </section>`
   );
 };
 
-const createEditPointTemplate = ({point, destinations, destination, types, availableOffers}) => {
+const createEditPointTemplate = ({
+  point, destinations, destination, types, availableOffers,
+  isDisabled,
+  isSaving,
+  isDeleting
+}) => {
   const {basePrice, dateFrom, dateTo, offers, type} = point;
   const {name, description, pictures} = destination;
 
-  const pointTypeTemplate = createPointTypeTemplate(types, type);
-  const destinationsTemplate = createDestinationsTemplate(destinations);
-  const offersTemplate = createOffersTemplate(availableOffers, offers);
+  const pointTypeTemplate = createPointTypeTemplate(types, type, isDisabled);
+  const destinationsTemplate = createDestinationsTemplate(destinations, isDisabled);
+  const offersTemplate = createOffersTemplate(availableOffers, offers, isDisabled);
   const descriptionTemplate = createDescriptionTemplate({description, pictures});
 
   return `
@@ -103,7 +122,12 @@ const createEditPointTemplate = ({point, destinations, destination, types, avail
                       <span class="visually-hidden">Choose event type</span>
                       <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
                     </label>
-                    <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+                    <input
+                      class="event__type-toggle  visually-hidden"
+                      id="event-type-toggle-1"
+                      type="checkbox"
+                      ${isDisabled ? 'disabled' : ''}
+                    >
 
                     <div class="event__type-list">
                       <fieldset class="event__type-group">
@@ -117,7 +141,16 @@ const createEditPointTemplate = ({point, destinations, destination, types, avail
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${capitalize(type)}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(name ?? '')}" list="destination-list-1">
+                    <input
+                      class="event__input  event__input--destination"
+                      id="event-destination-1"
+                      type="text"
+                      name="event-destination"
+                      value="${he.encode(name ?? '')}"
+                      list="destination-list-1"
+                      required
+                      ${isDisabled ? 'disabled' : ''}
+                    >
                     <datalist id="destination-list-1">
                       ${destinationsTemplate}
                     </datalist>
@@ -125,10 +158,26 @@ const createEditPointTemplate = ({point, destinations, destination, types, avail
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDateTime(dateFrom)}">
+                    <input
+                      class="event__input  event__input--time"
+                      id="event-start-time-1"
+                      type="text"
+                      name="event-start-time"
+                      value="${dateFrom ? formatDateTime(dateFrom) : ''}"
+                      required
+                      ${isDisabled ? 'disabled' : ''}
+                    >
                     &mdash;
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDateTime(dateTo)}">
+                    <input
+                      class="event__input  event__input--time"
+                      id="event-end-time-1"
+                      type="text"
+                      name="event-end-time"
+                      value="${dateTo ? formatDateTime(dateTo) : ''}"
+                      required
+                      ${isDisabled ? 'disabled' : ''}
+                    >
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -136,11 +185,20 @@ const createEditPointTemplate = ({point, destinations, destination, types, avail
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${he.encode(basePrice.toString())}">
+                    <input
+                      class="event__input  event__input--price"
+                      id="event-price-1"
+                      type="number"
+                      name="event-price"
+                      value="${he.encode(basePrice.toString())}"
+                      min="1"
+                      required
+                      ${isDisabled ? 'disabled' : ''}
+                    >
                   </div>
 
-                  <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Delete</button>
+                  <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
+                  <button class="event__reset-btn" type="reset">${isDeleting ? 'Deleting...' : 'Delete'}</button>
                   <button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
                   </button>
@@ -185,6 +243,9 @@ export default class EditPoint extends AbstractStatefulView {
       destination: this.#destinations.find((destination) => destination.id === this._state.destination) ?? {},
       types: this.#types,
       availableOffers: this.#offers.find((offer) => offer.type === this._state.type)?.offers ?? [],
+      isDisabled: this._state.isDisabled,
+      isSaving: this._state.isSaving,
+      isDeleting: this._state.isDeleting,
     });
   }
 
@@ -261,18 +322,25 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = (evt) => {
-    const value = evt.target.value;
+    const target = evt.target;
+    if (!target) {
+      return;
+    }
+
+    const value = target.value;
     if (!value) {
       return;
     }
 
-    const id = this.#destinations.find((destination) => destination.name === value)?.id ?? null;
-    if (!id) {
+    const destinationId = this.#destinations.find((destination) => destination.name === value)?.id ?? null;
+    if (!destinationId) {
+      target.setCustomValidity('Выберите город из выпадающего списка');
+      target.reportValidity();
       return;
     }
 
     this.updateElement({
-      destination: id,
+      destination: destinationId,
     });
   };
 
@@ -324,10 +392,21 @@ export default class EditPoint extends AbstractStatefulView {
   };
 
   static parsePointToState(point) {
-    return {...point};
+    return {
+      ...point,
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    };
   }
 
   static parseStateToPoint(state) {
-    return {...state};
+    const updatedState = {...state};
+
+    delete updatedState.isDisabled;
+    delete updatedState.isSaving;
+    delete updatedState.isDeleting;
+
+    return updatedState;
   }
 }
