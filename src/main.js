@@ -35,11 +35,13 @@ const newTaskButtonComponent = new NewPointButton({
 });
 
 function handleNewPointFormClose() {
+  boardPresenter.handleAddFormClose();
   newTaskButtonComponent.element.disabled = false;
 }
 
 function handleNewPointButtonClick() {
   boardPresenter.createPoint();
+  boardPresenter.handleAddFormOpen();
   newTaskButtonComponent.element.disabled = true;
 }
 

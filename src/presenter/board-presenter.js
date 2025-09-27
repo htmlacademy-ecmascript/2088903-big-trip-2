@@ -1,4 +1,4 @@
-import { remove, render, } from '../framework/render.js';
+import { remove, render, RenderPosition, } from '../framework/render.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import List from '../view/list.js';
 import Sort from '../view/sort.js';
@@ -90,13 +90,26 @@ export default class BoardPresenter {
     this.#newPointPresenter.init(BLANK_POINT, this.destinations, this.offers);
   }
 
+  handleAddFormOpen() {
+    if (this.points.length === 0) {
+      remove(this.#noPointsComponent);
+      this.#noPointsComponent = null;
+    }
+  }
+
+  handleAddFormClose() {
+    if (this.points.length === 0) {
+      this.#renderNoPoints();
+    }
+  }
+
   #renderSort() {
     this.#sortComponent = new Sort({
       sortTypes: SORT_TYPES,
       currentSortType: this.#currentSortType,
       onSortTypeChange: this.#handleSortTypeChange
     });
-    render(this.#sortComponent, this.#tripContainer);
+    render(this.#sortComponent, this.#tripContainer, RenderPosition.AFTERBEGIN);
   }
 
   #renderPoint(point, destinations, offers) {
@@ -122,6 +135,8 @@ export default class BoardPresenter {
   }
 
   #renderBoard() {
+    render(this.#pointListComponent, this.#tripContainer);
+
     if (this.#isLoading) {
       this.#renderLoading();
       return;
@@ -133,8 +148,6 @@ export default class BoardPresenter {
     }
 
     this.#renderSort();
-    render(this.#pointListComponent, this.#tripContainer);
-
     this.#renderPoints();
   }
 
