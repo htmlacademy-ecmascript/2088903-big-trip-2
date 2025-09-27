@@ -102,13 +102,8 @@ export default class PointPresenter {
   };
 
   #handleFormSubmit = (update) => {
-    // const isMinorUpdate =
-    //         !isDatesEqual(this.#point['date_from'], update['date_from']) ||
-    //         !isDatesEqual(this.#point['date_to'], update['date_to']);
-
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
-      // isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       UpdateType.MINOR,
       update,
     );
@@ -124,7 +119,7 @@ export default class PointPresenter {
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
-      {...this.#point, 'is_favorite': !this.#point['is_favorite']});
+      {...this.#point, isFavorite: !this.#point.isFavorite});
   };
 
   #handleDeleteClick = (point) => {

@@ -86,7 +86,7 @@ const createDescriptionTemplate = ({description, pictures}) => {
 };
 
 const createAddPointTemplate = ({point, destinations, destination, types, availableOffers}) => {
-  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
+  const {basePrice, dateFrom, dateTo, offers, type} = point;
   const {name, description, pictures} = destination;
 
   const pointTypeTemplate = createPointTypeTemplate(types, type);
@@ -133,10 +133,10 @@ const createAddPointTemplate = ({point, destinations, destination, types, availa
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDateTime(dateFrom)}">
+                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom ? formatDateTime(dateFrom) : ''}" required>
                     &mdash;
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDateTime(dateTo)}">
+                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTo ? formatDateTime(dateTo) : ''}" required>
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -144,7 +144,7 @@ const createAddPointTemplate = ({point, destinations, destination, types, availa
                       <span class="visually-hidden">Price</span>
                       &euro;
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${he.encode(basePrice.toString())}">
+                    <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${he.encode(basePrice.toString())}" min="1" required>
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -229,7 +229,7 @@ export default class AddPoint extends AbstractStatefulView {
   };
 
   #basePriceChangeHandler = (evt) => {
-    this._setState({'base_price': parseInt(evt.target.value, 10)});
+    this._setState({basePrice: parseInt(evt.target.value, 10)});
   };
 
   #selectedOffersChangeHandler = (evt) => {
@@ -275,13 +275,13 @@ export default class AddPoint extends AbstractStatefulView {
 
   #dateFromChangeHandler = ([date]) => {
     this.updateElement({
-      'date_from': date
+      dateFrom: date
     });
   };
 
   #dateToChangeHandler = ([date]) => {
     this.updateElement({
-      'date_to': date
+      dateTo: date
     });
   };
 
@@ -292,8 +292,7 @@ export default class AddPoint extends AbstractStatefulView {
         dateFormat: DateFormat.FlATPICKR,
         enableTime: true,
         'time_24hr': true,
-        defaultDate: this._state.date_from,
-        maxDate: this._state.date_to,
+        maxDate: this._state.dateTo,
         onClose: this.#dateFromChangeHandler,
         locale: {firstDayOfWeek: 1},
       },
@@ -307,8 +306,7 @@ export default class AddPoint extends AbstractStatefulView {
         dateFormat: DateFormat.FlATPICKR,
         enableTime: true,
         'time_24hr': true,
-        defaultDate: this._state.date_to,
-        minDate: this._state.date_from,
+        minDate: this._state.dateFrom,
         onClose: this.#dateToChangeHandler,
         locale: {firstDayOfWeek: 1},
       },

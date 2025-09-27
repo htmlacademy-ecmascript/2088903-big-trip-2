@@ -12,7 +12,7 @@ const createOffersList = (offers) => (
 );
 
 const createPointTemplate = ({point, destination, offers}) => {
-  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, is_favorite: isFavorite, type} = point;
+  const {basePrice, dateFrom, dateTo, isFavorite, type} = point;
   const {name} = destination;
   const offersList = createOffersList(offers);
 
