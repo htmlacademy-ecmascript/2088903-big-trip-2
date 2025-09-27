@@ -57,6 +57,7 @@ export default class PointPresenter {
 
     if (this.#mode === Mode.EDITING) {
       replace(this.#editPointComponent, prevPointEditComponent);
+      this.#mode = Mode.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -73,6 +74,41 @@ export default class PointPresenter {
   destroy() {
     remove(this.#pointComponent);
     remove(this.#editPointComponent);
+  }
+
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editPointComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editPointComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editPointComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#editPointComponent.shake(resetFormState);
   }
 
   #escKeyDownHandler = (evt) => {
@@ -102,17 +138,11 @@ export default class PointPresenter {
   };
 
   #handleFormSubmit = (update) => {
-    // const isMinorUpdate =
-    //         !isDatesEqual(this.#point['date_from'], update['date_from']) ||
-    //         !isDatesEqual(this.#point['date_to'], update['date_to']);
-
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
-      // isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       UpdateType.MINOR,
       update,
     );
-    this.#replaceFormToPoint();
   };
 
   #handleCloseClick = () => {
@@ -124,7 +154,7 @@ export default class PointPresenter {
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
-      {...this.#point, 'is_favorite': !this.#point['is_favorite']});
+      {...this.#point, isFavorite: !this.#point.isFavorite});
   };
 
   #handleDeleteClick = (point) => {

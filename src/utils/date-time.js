@@ -1,10 +1,16 @@
 import dayjs from 'dayjs';
-import { DateFormat } from '../const/date-format.js';
-import duration from 'dayjs/plugin/duration';
+import {
+  DateFormat,
+  MILLISECONDS_IN_MINUTE,
+  MINUTES_IN_DAY,
+  MINUTES_IN_HOUR,
+  PAD_LENGTH,
+  PAD_SYMBOL,
+  TIME_UNIT
+} from '../const/date-format.js';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
-dayjs.extend(duration);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
@@ -16,35 +22,38 @@ export const formatMonthDay = (date) => dateTime(date, DateFormat.MONTH_DAY);
 
 export const formatTime = (date) => dateTime(date, DateFormat.HOUR_MINUTE);
 
-export const getTimeDifference = (dateFrom, dateTo) => {
-  const start = dayjs(dateFrom);
-  const end = dayjs(dateTo);
-  const DEFAULT_VALUE = 0;
-
-  if (!start.isValid() || !end.isValid()) {
-    return DEFAULT_VALUE.format(DateFormat.DURATION_MINUTE);
-  }
-
-  const difference = end.diff(start);
-  const diffDuration = dayjs.duration(difference);
-
-  if (diffDuration.asHours() < 1) {
-    return diffDuration.format(DateFormat.DURATION_MINUTE);
-  }
-
-  if (diffDuration.asDays() < 1) {
-    return diffDuration.format(DateFormat.DURATION_HOUR_MINUTE);
-  }
-
-  return diffDuration.format(DateFormat.DURATION_DAY_HOUR_MINUTE);
-};
-
 export const isBeforeToday = (date) => dayjs(date).isBefore(dayjs(), 'day');
 
 export const isAfterToday = (date) => dayjs(date).isAfter(dayjs(), 'day');
 
 export const isToday = (dateFrom, dateTo) =>
   dayjs(dateFrom).isSameOrBefore(dayjs(), 'day') &&
-    dayjs(dateTo).isSameOrAfter(dayjs(), 'day');
+  dayjs(dateTo).isSameOrAfter(dayjs(), 'day');
 
-export const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
+export const getTimeDifference = (dateFrom, dateTo) => {
+  const startDate = dayjs(dateFrom);
+  const endDate = dayjs(dateTo);
+
+  if (!startDate.isValid() || !endDate.isValid()) {
+    return '';
+  }
+
+  const diffMilliseconds = endDate.diff(startDate);
+  const totalMinutes = Math.floor(diffMilliseconds / MILLISECONDS_IN_MINUTE);
+
+  const days = Math.floor(totalMinutes / MINUTES_IN_DAY);
+  const hours = Math.floor((totalMinutes % MINUTES_IN_DAY) / MINUTES_IN_HOUR);
+  const minutes = totalMinutes % MINUTES_IN_HOUR;
+
+  const pad = (value) => value.toString().padStart(PAD_LENGTH, PAD_SYMBOL);
+
+  if (days > 0) {
+    return `${pad(days)}${TIME_UNIT.DAY} ${pad(hours)}${TIME_UNIT.HOUR} ${pad(minutes)}${TIME_UNIT.MINUTE}`;
+  }
+
+  if (hours > 0) {
+    return `${pad(hours)}${TIME_UNIT.HOUR} ${pad(minutes)}${TIME_UNIT.MINUTE}`;
+  }
+
+  return `${pad(minutes)}${TIME_UNIT.MINUTE}`;
+};
