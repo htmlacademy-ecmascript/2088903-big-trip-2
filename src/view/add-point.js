@@ -86,7 +86,7 @@ const createDescriptionTemplate = ({description, pictures}) => {
 };
 
 const createAddPointTemplate = ({point, destinations, destination, types, availableOffers}) => {
-  const {base_price: basePrice, date_from: dateFrom, date_to: dateTo, offers, type} = point;
+  const {basePrice, dateFrom, dateTo, offers, type} = point;
   const {name, description, pictures} = destination;
 
   const pointTypeTemplate = createPointTypeTemplate(types, type);
@@ -229,7 +229,7 @@ export default class AddPoint extends AbstractStatefulView {
   };
 
   #basePriceChangeHandler = (evt) => {
-    this._setState({'base_price': parseInt(evt.target.value, 10)});
+    this._setState({basePrice: parseInt(evt.target.value, 10)});
   };
 
   #selectedOffersChangeHandler = (evt) => {
@@ -275,13 +275,13 @@ export default class AddPoint extends AbstractStatefulView {
 
   #dateFromChangeHandler = ([date]) => {
     this.updateElement({
-      'date_from': date
+      dateFrom: date
     });
   };
 
   #dateToChangeHandler = ([date]) => {
     this.updateElement({
-      'date_to': date
+      dateTo: date
     });
   };
 
@@ -292,8 +292,8 @@ export default class AddPoint extends AbstractStatefulView {
         dateFormat: DateFormat.FlATPICKR,
         enableTime: true,
         'time_24hr': true,
-        defaultDate: this._state.date_from,
-        maxDate: this._state.date_to,
+        defaultDate: this._state.dateFrom,
+        maxDate: this._state.dateTo,
         onClose: this.#dateFromChangeHandler,
         locale: {firstDayOfWeek: 1},
       },
@@ -307,8 +307,8 @@ export default class AddPoint extends AbstractStatefulView {
         dateFormat: DateFormat.FlATPICKR,
         enableTime: true,
         'time_24hr': true,
-        defaultDate: this._state.date_to,
-        minDate: this._state.date_from,
+        defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
         onClose: this.#dateToChangeHandler,
         locale: {firstDayOfWeek: 1},
       },
