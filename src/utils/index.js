@@ -1,9 +1,9 @@
-export const capitalize = (string) => {
-  if (typeof string !== 'string' || string.length === 0) {
+export const capitalize = (text) => {
+  if (typeof text !== 'string' || text.length === 0) {
     return '';
   }
 
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
 export const isEscapeKey = (evt) => evt.key === 'Escape';
