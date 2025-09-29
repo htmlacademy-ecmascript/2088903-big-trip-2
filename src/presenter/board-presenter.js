@@ -13,7 +13,7 @@ import { SORT_TYPES, SortType } from '../const/sort-types.js';
 import { UserAction } from '../const/user-action.js';
 import { UpdateType } from '../const/update-type.js';
 import { FilterType } from '../const/filter-type.js';
-import { BLANK_POINT } from '../const/blank-point.js';
+import { BLANK_POINT } from '../const/point.js';
 import { TimeLimit } from '../const/api.js';
 
 export default class BoardPresenter {
