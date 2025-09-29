@@ -5,6 +5,7 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { capitalize } from '../utils/index.js';
 import { formatDateTime } from '../utils/date-time.js';
 import { DateFormat } from '../const/date-format.js';
+import { INVALID_CITY_MESSAGE } from '../const/point.js';
 
 const createPointTypeTemplate = (types, current, isDisabled) => (
   types.map((type) => (
@@ -334,7 +335,7 @@ export default class EditPoint extends AbstractStatefulView {
 
     const destinationId = this.#destinations.find((destination) => destination.name === value)?.id ?? null;
     if (!destinationId) {
-      target.setCustomValidity('Выберите город из выпадающего списка');
+      target.setCustomValidity(INVALID_CITY_MESSAGE);
       target.reportValidity();
       return;
     }
