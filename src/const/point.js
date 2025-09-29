@@ -14,3 +14,5 @@ export const BLANK_POINT = {
   offers: [],
   type: DefaultValue.TYPE,
 };
+
+export const INVALID_CITY_MESSAGE = 'Выберите город из выпадающего списка';
